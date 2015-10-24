@@ -1,0 +1,4 @@
+#config ignore
+**__pycache__
+**venv
+**img

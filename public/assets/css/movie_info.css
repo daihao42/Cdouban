@@ -1,0 +1,17 @@
+div.body{
+	width: 100%;
+}
+div.post_img{
+	width: 50%;
+	float: left;
+}
+div.movie_info{
+	height:600px;
+}
+
+div#carousel-example-generic{
+	/*****/
+} 
+div#carousel-example-generic > div.carousel-inner > div.item{
+    text-align: center;
+}
