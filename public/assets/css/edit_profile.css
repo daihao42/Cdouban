@@ -1,0 +1,16 @@
+.headimg{
+	width: 80%;
+	height: 10px;
+}
+.now_img{
+	width: 20%;
+	margin: 0px 10% 0px;
+	float: left;
+}
+.upload_img{
+	width: 60%;
+	float: right;
+}
+.form_update{
+	margin: 25% 0px 0px;
+}

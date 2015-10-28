@@ -120,8 +120,8 @@ if(!empty($_GET['page']))
         <!-- ^^^^判断是否关注，然后为i赋予不同颜色 -->
 
         <!--关注该影片的人数 -->
-        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><button class="btn btn-primary" type="button" style="float:right;"><span class="badge"><?php echo $ff->getFollowNum($i['id']) ?></span>
-                </button></a>
+        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="badge" style="float:right;background-color:#66ccff;">......<?php echo $ff->getFollowNum($i['id']) ?>......</span>
+                </a>
         </p>
       </div>
     </div>
@@ -199,7 +199,6 @@ if(!empty($_GET['page']))
 
 <!--^^^影片展示-->
 
-<?php echo $pagecount; ?>
 <!--分页显示   (准备采用ajax)-->
 <nav align="center">
   <ul class="pagination pagination-lg pager">
@@ -228,6 +227,7 @@ if(!empty($_GET['page']))
 <!--^^^^分页显示-->
 <?php if(isset($_SESSION['user'])): ?>
 <!-- 显示user城市-->
+<!-- 取消于2015-10-28,待新功能上线
 <?php 
     $city = $wea->getUserCity($_SESSION['user']['name']);
     $swea = new Weather($dbo, $city[0][0]);
@@ -251,7 +251,8 @@ if(!empty($_GET['page']))
 	<input type="text" name="city" autocomplete="off" placeholder="城市"/>
 	<input type="submit" value="查询天气"/>
 </form>
-
+ -->
+ 
 <!--
 <?php $arr = $wea->buildCityInfo();
 	  foreach ($arr as $inf):

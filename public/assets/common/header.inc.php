@@ -59,7 +59,7 @@
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu" aria-labelledby="drop3">
-                <li><a href="./user_view.php">个人关注</a></li>
+                <li><a href="./user_view.php?id=<?php echo $_SESSION['user']['id']; ?>">个人关注</a></li>
                 <li><a href="#">Another action</a></li>
                 <li><a href="#">Something else here</a></li>
                 <li role="separator" class="divider"></li>
@@ -80,7 +80,7 @@
             <!-- 若用户未登录 -->
           <form class="navbar-form navbar-right" action="assets/inc/process.inc.php" method="post">
             <div class="form-group">
-              <input type="text" name="uname" id="uname" placeholder="用户名" 
+              <input type="text" name="uemail" id="uemail" placeholder="用户邮箱" 
                      required class="form-control">
             </div>
             <div class="form-group">

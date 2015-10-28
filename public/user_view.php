@@ -10,14 +10,34 @@ if(!isset($_SESSION['user'])){
 	  /*
 	   * 页面初始化信息，包括标题，js和css
 	   */
-	  $page_title = $_SESSION['user']['name']."的关注";
 
-	  $js_files = array("init.js");
+	  $js_files = array("init.js","user_view.js");
 
-	  $css_files = array("ajax.css","movie.css");
+	  $css_files = array("ajax.css","movie.css","user.css");
 
 	  //follow
     $ff = new Follow();
+
+    //User (admin)
+    $uu = new Admin();
+
+    //attention
+    $aa = new Attention();
+
+    //获取用户ID
+    if(!empty($_GET['id']))
+    {
+      $id = $_GET['id'];
+    }
+    else
+    {
+      header("Location:./");
+      exit;
+    }
+
+    $user = $uu->findUserByID($id);
+
+    $page_title = $user['user_name']."的收藏";
 
 	  include_once 'assets/common/header.inc.php';
 ?>
@@ -25,13 +45,63 @@ if(!isset($_SESSION['user'])){
 <br />
 <br />
 <br />
+
+<div class="all">
+<!-- 用户信息展示 -->
+<div class="user_info">
+  <div class="thumbnail">
+    <img src="<?php echo $user['user_img'] ?>" alt="userimg" class="img-responsive img-circle">
+    <div class="caption">
+      <h3><?php echo $user['user_name'] ?></h3>
+      <p><a href="http://map.baidu.com/?q=<?php echo $user['user_city'] ?>">
+        <?php echo $user['user_city'] ?></a>
+      </p>
+      <p>
+        <?php echo $user['user_about']; ?>
+      </p>
+      <!-- 当前登陆用户与查看用户一致则显示edit按钮 -->
+      <?php if($_SESSION['user']['id'] == $id): ?>
+      <p><a href="./edit_profile.php?id=<?php echo $id ?>" class="btn btn-primary">编辑资料</a>
+      <a href="./attention.php?c=atten" >关注我的</a>
+      <a href="./attention.php">我关注的</a></p>
+    <!-- 不一致且当前用户未关注该用户则显示关注按钮 -->
+  <?php elseif(!$aa->isAttention($_SESSION['user']['id'],$id)): ?>
+    <p><a href="javascript:void(0);" 
+        onclick="attention(<?php echo $_SESSION['user']['id'] ?>,<?php echo $id ?>,this)" 
+        class="btn btn-primary" role="button">关注</a>
+        <a href="./attention.php?id=<?php echo $id ?>">他的关注</a></p>
+    <!-- 否则,当前用户已关注该用户且该用户未关注当前用户,已关注 -->
+  <?php elseif(!$aa->isAttention($id,$_SESSION['user']['id'])): ?>
+    <p><a href="javascript:void(0);"
+      onclick="attention(<?php echo $_SESSION['user']['id'] ?>,<?php echo $id ?>,this)"
+     class="btn btn-default" role="button">已关注</a><a href="./attention.php?id=<?php echo $id ?>">他的关注</a></p>
+    <!--否则,当前用户与该用户互相关注 -->
+  <?php else: ?>
+    <p><a href="javascript:void(0);"
+      onclick="attention(<?php echo $_SESSION['user']['id'] ?>,<?php echo $id ?>,this)"
+     class="btn btn-default" role="button">互相关注</a><a href="./attention.php?id=<?php echo $id ?>">他的关注</a></p>
+    <?php endif ?>
+          <!-- 显示关注该用户的人数-->
+    <p><span class="badge">
+      关注<?php echo $aa->countAttenNum('atten_id',$id) ?>
+    </span>&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="badge">
+      粉丝<?php echo $aa->countAttenNum('attened_id',$id) ?>
+    </span>                         
+    </p>
+    </div>
+  </div>
+</div>
+<!--^^^^ 用户信息展示 -->
+
 <!--影片展示-->
+<div class="movie_info">
 <div class="row">
-<?php $arr = $ff->getUserFollow($_SESSION['user']['id']);
+<?php $arr = $ff->getUserFollow($id);
 	  $id = 0;
 	  foreach ($arr as $i):
 ?>
-  <div class="col-sm-6 col-md-2 col-xs-6">
+  <div class="col-sm-6 col-md-3 col-xs-8">
     <div class="thumbnail">
 		<a data-toggle="modal" data-target="#<?php echo $id ?>myModal">
 		<img id="movie-post" src="../douban/img/<?php echo $i['title'].'.jpg' ?>" alt="<?php echo $i['title'] ?>"
@@ -49,8 +119,8 @@ if(!isset($_SESSION['user'])){
         <!-- ^^^^判断是否关注，然后为i赋予不同颜色 -->
 
         <!--关注该影片的人数 -->
-        <button class="btn btn-primary" type="button" style="float:right;"><span class="badge"><?php echo $ff->getFollowNum($i['id']) ?></span>
-                </button>
+        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="badge" style="float:right;background-color:#66ccff;">......<?php echo $ff->getFollowNum($i['id']) ?>......</span>
+                </a>
         </p>
       </div>
     </div>
@@ -122,9 +192,10 @@ if(!isset($_SESSION['user'])){
 </div>
 <!-- ^^^模态框 -->
 
-<?php $id++;
-	  endforeach; ?>
+    <?php $id++;
+	       endforeach; ?>
+  </div>
 </div>
-
+</div>
 <!--^^^影片展示-->
 <?php include_once 'assets/common/footer.inc.php'; ?>

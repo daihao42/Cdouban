@@ -123,7 +123,7 @@ class Movie extends DB_Connect
 		public function getHotMovie()
 		{
 			$sql = "select `title`,`director`,`actor`,`runtime`
-					 from `movie_info` order by `average` desc limit 3";
+					 from `movie_info` order by `votes` desc limit 3";
 			try
 			{
 				$stmt = $this->db->prepare($sql);

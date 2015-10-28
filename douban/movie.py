@@ -171,6 +171,27 @@ class Movie:
 		
 		return d
 
+	#更新评论人数和评价
+	def updateInfo(self,url):
+		oper = self._getHtml(url)
+		d = {}
+		if oper is None:
+			return None
+		try:
+			soup = BeautifulSoup(oper,"html.parser")
+		except Exception:
+			return d
+		istr=soup.find('strong',property="v:average").get_text()
+		d['average'] = float(istr)
+
+		istr=soup.find('span',property="v:votes").get_text()
+		d['votes'] = int(istr)
+
+		print(d)
+
+		return d
+
+
 
 
 

@@ -12,8 +12,17 @@ while (True):
 	m = Movie("http://movie.douban.com/")
 	m.dumpImg()
 	for i in m.arr:
+		#如果存在记录，则更新评论人数和评级
 		if(session.query(MovieDB).filter_by(title=i['title']).first() is not None):
-			continue
+			d = m.updateInfo(i['info'])
+			try:
+				s = session.query(MovieDB).filter_by(title=i['title']).first()
+				s.average=d['average']
+				s.votes=d['votes']
+				session.add(s)
+				session.commit()
+			except Exception:
+				continue
 		else:
 			d = m.getInfo(i['info'],i['title'])
 			s = MovieDB(title = i['title'],
@@ -32,5 +41,5 @@ while (True):
 					)
 			session.add(s)
 			session.commit()
-	time.sleep(60*60)
+	time.sleep(6*60*60)
 

@@ -38,7 +38,32 @@ if($_POST['action']=="upFollow" )
 	echo $f->upFollow($_POST['userID'],$_POST['movieID']);
 }
 
+//Attention
+$atten = new Attention();
+//调用attention.upAttention方法,并判断是否互相关注
+if ($_POST['action']=="upAttention") 
+{
+	if($atten->upAttention($_POST['attenID'],$_POST['attenedID'])
+					&& $atten->isAttention($_POST['attenedID'],$_POST['attenID']))
+	{
+		echo '互相关注';
+	}
+else{
+	echo "已关注";
+}
+}
 
+//调用attention.downAttention方法,并判断是否互相关注
+if ($_POST['action']=="downAttention") 
+{
+	if($atten->downAttention($_POST['attenID'],$_POST['attenedID']))
+	{
+		echo '关注';
+	}
+else{
+	echo FALSE;
+}
+}
 
 /*
  * modal只有text方法，不能解析为html，所以只能显示出html语句，所以弃用

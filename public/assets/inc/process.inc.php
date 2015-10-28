@@ -33,6 +33,11 @@ session_start();
 				'object' => 'Admin',
 				'method' => 'processRegister',
 				'header' => 'Location:../../'
+				),
+			'user_editprofile' => array(
+				'object' => 'Admin',
+				'method' => 'updateUserInfo',
+				'header' => 'Location:../../'
 				)
 		);
 

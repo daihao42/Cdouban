@@ -3,7 +3,8 @@
 //包含必要的配置信息
 include_once '../sys/core/init.inc.php';
 //如果未登陆或者没有查询影片，则调回主页
-if(!isset($_SESSION['user']) || empty($_GET['movie'])){
+//2015-10-27允许未登录查看影片信息
+if(empty($_GET['movie'])){
 	header("Location:./");
 	exit;
 }
@@ -15,7 +16,7 @@ if(!isset($_SESSION['user']) || empty($_GET['movie'])){
 
 	  $page_title = $movie_title;
 
-	  $js_files = array("init.js");
+	  $js_files = array("init.js","movie_view.js");
 
 	  $css_files = array("ajax.css","movie_info.css");
 
@@ -34,6 +35,7 @@ if(!isset($_SESSION['user']) || empty($_GET['movie'])){
 <br />
 <br />
 <br />
+<h4><strong><?php echo $page_title ?></strong> </h4>
 <div class="body">
  	<div class="post_img">
         <img src="../douban/img/<?php echo $i['title'].'.jpg' ?>" alt="<?php echo $i['title'] ?>"
@@ -55,7 +57,8 @@ if(!isset($_SESSION['user']) || empty($_GET['movie'])){
        </div>
  </div>
 
-<h2> 剧照： </h2>
+<br/>
+<label> 剧照： </label>
         <!--剧照显示(Carousel)-->
         <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
  		 <!-- Indicators -->
@@ -104,12 +107,26 @@ if(!isset($_SESSION['user']) || empty($_GET['movie'])){
 
 <!-- 关注这部影片的人 -->
 <div class="follow_this">
+<br />
+<label>他们也收藏这部影片</label>
   <?php foreach ($ff->getFollowUser($i['id']) as $u): ?>
-    <ul>
-      <li><?php echo $u['user_name'] ?></li>
-      <li><?php echo $u['user_city']; ?></li>
-    </ul>
+    <div>
+      <span><a href="javascript:void(0);" onclick="is_login(<?php echo (isset($_SESSION['user']) ? 'true' : 'false') ?>,<?php echo $u['user_id']; ?>)"><span>
+        <img src="<?php echo $u['user_img'] ?>" class="img-responsive img-thumbnail" style="width:70px;">
+      </span> <?php echo $u['user_name'] ?></a></span>
+    </div>
   <?php endforeach ?>
 </div>
+
+<!-- 未登陆则显示警告模态框 -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="warn_login">
+  <div class="modal-dialog modal-sm">
+      <div class="alert alert-danger" role="alert">
+      <h5 align="center"><strong>警告：</strong></h5>
+      <p align="center">你需要登录先！</p> </div>
+  </div>
+</div>
+
+
 </div>
 <?php include_once 'assets/common/footer.inc.php'; ?>

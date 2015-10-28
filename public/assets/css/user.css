@@ -1,0 +1,12 @@
+.all{
+	width: 90%;
+	margin:0 auto;
+}
+.movie_info{
+	width:70%;
+
+}
+.user_info{
+	width:25%;
+    float:right;
+}

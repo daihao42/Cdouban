@@ -201,7 +201,7 @@ class Follow extends DB_Connect
  		$res = array();
  		foreach ($follow as $i) {
  			//查询单部电影 where + limit
-			$sql = "select `user_name`,`user_email`,`user_city` from `users` where `user_id`=:id limit 1";
+			$sql = "select `user_id`,`user_name`,`user_email`,`user_city` ,`user_img` from `users` where `user_id`=:id limit 1";
 			try
 			{
 				$stmt = $this->db->prepare($sql);

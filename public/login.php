@@ -19,8 +19,8 @@
 			<legend>
 				Please Log In
 			</legend>
-			<label for="uname">Username</label>
-			<input type="text" name="uname" id="uname" value="" />
+			<label for="uname">UserE-mail</label>
+			<input type="text" name="uemail" id="uemail" value="" />
 			<label for="pword">Password</label>
 			<input type="password" name="pword" id="pword" value="" />
 			<input type="hidden" name="token" value="<?php echo $_SESSION['token']; ?>" />

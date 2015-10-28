@@ -74,18 +74,18 @@
  		}
 
  		//安全起见转义用户输入数据
- 		$uname = htmlentities($_POST['uname'],ENT_QUOTES);
+ 		$uemail = htmlentities($_POST['uemail'],ENT_QUOTES);
  		$pword = htmlentities($_POST['pword'],ENT_QUOTES);
 
  		/*
  		 * 若用户存在则返回数据库中匹配信息
  		 */
  		$sql = "select `user_id`,`user_name`,`user_email`,`user_pass`
- 				from `users` where `user_name` = :uname limit 1";
+ 				from `users` where `user_email` = :uemail limit 1";
  		try
  		{
  			$stmt = $this->db->prepare($sql);
- 			$stmt->bindParam(':uname',$uname,PDO::PARAM_STR);
+ 			$stmt->bindParam(':uemail',$uemail,PDO::PARAM_STR);
  			$stmt->execute();
  			$user = array_shift($stmt->fetchAll());
  			$stmt->closeCursor();
@@ -100,7 +100,7 @@
  		 */
  		if (!isset($user))
  		{
- 			return "No user found with that ID.";
+ 			return $uemail."No user found with that ID.";
  		}
 
  		/*
@@ -127,7 +127,7 @@
  		 */
  		else
  		{
- 		return "Your username or password is invaild.";
+ 		return "Your useremail or password is invaild.";
  		}
  	}
 
@@ -241,6 +241,7 @@
  		}
 
  		//查询城市是否正确
+ 		/* 出于显示天气并不好用的原因，取消验证城市可用性(2015-10-28)
  		$sql = "select * from `city_sk_info` where `city` = :ucity limit 1";
  		try
  		{
@@ -259,11 +260,12 @@
  		{
  			return 'wrong city!';
  		}
+ 		*/
 
 
  		//正确，插入数据进users表中
- 		$sql = "insert into `users` (`user_name`,`user_pass`,`user_email`,`user_city`)
- 				values (:uname, :upword, :uemail, :ucity)";
+ 		$sql = "insert into `users` (`user_name`,`user_pass`,`user_email`,`user_city`,`user_img`)
+ 				values (:uname, :upword, :uemail, :ucity, :uimg)";
  		try
  		{
  			$hash = $this->_getSaltedHash($pword);
@@ -272,6 +274,8 @@
  			$stmt->bindParam(':upword',$hash,PDO::PARAM_STR);
  			$stmt->bindParam(':uemail',$uemail,PDO::PARAM_STR);
  			$stmt->bindParam(':ucity',$ucity,PDO::PARAM_STR);
+ 			$defalutimg="../static/defalut.jpg";
+ 			$stmt->bindParam(':uimg',$defalutimg,PDO::PARAM_STR);
  			$stmt->execute();
  			$stmt->closeCursor();
  			$_SESSION['user'] = array(
@@ -284,6 +288,65 @@
  		{
  			die($e->getMessage());
  		}
+ 	}
+
+ 	/**
+ 	 * 通过ID查询用户信息
+ 	 * @param int ID 用户的ID
+ 	 * @return array 用户信息组
+ 	 */
+ 	public function findUserByID($id)
+ 	{
+ 		$sql = "select * from `users` where `user_id` = :id limit 1";
+ 		try
+ 		{
+ 			$stmt = $this->db->prepare($sql);
+ 			$stmt->bindParam(':id',$id,PDO::PARAM_INT);
+ 			$stmt->execute();
+ 			$user = $stmt->fetchAll();
+ 			$stmt->closeCursor();
+ 		}
+ 		catch(Exception $e)
+ 		{
+ 			die($e->getMessage());
+ 		}
+ 		return $user[0];
+ 	}
+
+ 	/**
+ 	 * 修改用户信息
+ 	 * @param 用户所有信息参数
+ 	 * @return bool 成功true，失败false
+ 	 */
+ 	public function updateUserInfo()
+ 	{
+ 		//安全起见转义用户输入数据
+ 		$id = htmlentities($_POST['uid'],ENT_QUOTES);
+ 		$name = htmlentities($_POST['uname'],ENT_QUOTES);
+ 		$img = htmlentities($_POST['uimg'],ENT_QUOTES);
+ 		$city = htmlentities($_POST['ucity'],ENT_QUOTES);
+ 		$about = htmlentities($_POST['uabout'],ENT_QUOTES);
+ 		#$img = "../static/defalut.jpg";
+
+ 		$sql = "update `users` set `user_name`=:uname,
+ 		`user_img`=:uimg,`user_about`=:uabout,
+ 		`user_city`=:ucity where `user_id` = :id ";
+ 		try
+ 		{
+ 			$stmt = $this->db->prepare($sql);
+ 			$stmt->bindParam(':id',$id,PDO::PARAM_INT);
+ 			$stmt->bindParam(':uname',$name,PDO::PARAM_STR);
+ 			$stmt->bindParam(':uimg',$img,PDO::PARAM_STR);
+ 			$stmt->bindParam(':uabout',$about,PDO::PARAM_STR);
+ 			$stmt->bindParam(':ucity',$city,PDO::PARAM_STR);
+ 			$stmt->execute();
+ 			$stmt->closeCursor();
+ 		}
+ 		catch(Exception $e)
+ 		{
+ 			die($e->getMessage());
+ 		}
+ 		return TRUE;
  	}
 
  }
