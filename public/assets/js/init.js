@@ -223,10 +223,14 @@ $(function($){
   //完成php调用，并将关注图标变红
   function follow(userID,movieID,obj)
   { 
-  	//userID为0表示为登陆
+  	//userID为0表示未登陆
+  	if(userID==0){
+  		    //未登陆提示登陆，并退出函数
+    		$('#warn_login').modal('show');
+    		return false;
+  	}
     //如果已关注，则取消关注
     if(obj.style.color == "rgb(219, 112, 147)"){
-    	if(userID!=0){
     //ajax调用follow.downFollow()取消关注
     		$.ajax({
 			type: "POST",
@@ -236,7 +240,6 @@ $(function($){
 				//do something fun
 			}
 		});
-    		}
     //完成后将星形变黑
     obj.style.color="black";
     }
@@ -258,3 +261,18 @@ $(function($){
     obj.style.color="rgb(219, 112, 147)";
     }
   }
+
+//用ajax先处理session，再刷新页面
+function changeType(obj,cho)
+{
+	//ajax处理session
+	$.ajax({
+			type: "POST",
+			url: "assets/inc/ajax.inc.php",
+			data: "action=addType&cho="+cho+'&val='+obj.text,
+			success: function(data){
+					//alert(data);
+					window.location='.';
+			}
+		});
+}

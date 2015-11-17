@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 管理（添加，修改等）行为
+ * 管理（添加，修改等）用户行为
  * PHP 5.6
  * @author dai@2015
  *
@@ -282,12 +282,27 @@
  				'id'=>$this->_getID($uname),
  				'name'=>$uname,
  				'email'=>$uemail);
- 			return TRUE;
  		}
  		catch(Exception $e)
  		{
  			die($e->getMessage());
  		}
+
+ 		//同时，将自己加入自己的关注名单
+		$sql = "insert into `attention` (`atten_id`,`attened_id`)
+ 				values (:nid, :nid)";
+ 		try
+ 		{
+ 			$stmt = $this->db->prepare($sql);
+ 			$stmt->bindParam(':nid',$this->_getID($uname),PDO::PARAM_INT);
+ 			$stmt->execute();
+ 			$stmt->closeCursor();
+ 		}
+ 		catch(Exception $e)
+ 		{
+ 			die($e->getMessage());
+ 		}
+ 		return TRUE;
  	}
 
  	/**

@@ -13,8 +13,6 @@ session_start();
 		define($name, $val);
 	}
 
-
-
 	/*
 	 * 以表单action为键生成一个关联数组（查找表）
 	 */
@@ -37,6 +35,12 @@ session_start();
 			'user_editprofile' => array(
 				'object' => 'Admin',
 				'method' => 'updateUserInfo',
+				'header' => 'Location:../../'
+				),
+			'comment_post' => array(
+				'object' => 'Comment',
+				'method' => 'addComment',
+				//成功后返回该页面
 				'header' => 'Location:../../'
 				)
 		);

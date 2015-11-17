@@ -81,14 +81,16 @@ if(!isset($_SESSION['user'])){
       onclick="attention(<?php echo $_SESSION['user']['id'] ?>,<?php echo $id ?>,this)"
      class="btn btn-default" role="button">互相关注</a><a href="./attention.php?id=<?php echo $id ?>">他的关注</a></p>
     <?php endif ?>
-          <!-- 显示关注该用户的人数-->
+          <!-- 显示关注该用户的人数 ,其中减掉自己-->
     <p><span class="badge">
-      关注<?php echo $aa->countAttenNum('atten_id',$id) ?>
+      关注<?php echo $aa->countAttenNum('atten_id',$id) -1 ?>
     </span>&nbsp;&nbsp;&nbsp;&nbsp;
     <span class="badge">
-      粉丝<?php echo $aa->countAttenNum('attened_id',$id) ?>
+      粉丝<?php echo $aa->countAttenNum('attened_id',$id) -1 ?>
     </span>                         
     </p>
+    <!-- 注册时间 -->
+    <p>注册于：<?php echo $user['time'] ?></p>
     </div>
   </div>
 </div>
@@ -98,6 +100,7 @@ if(!isset($_SESSION['user'])){
 <div class="movie_info">
 <div class="row">
 <?php $arr = $ff->getUserFollow($id);
+      $cc = new Comment();
 	  $id = 0;
 	  foreach ($arr as $i):
 ?>
@@ -110,6 +113,12 @@ if(!isset($_SESSION['user'])){
         <p>导演：<?php echo $i['director'] ?></p>
         <p>类型：<?php echo $i['types'] ?></p>
         <p>
+        <!--关注该影片的人数 -->
+        <i class="glyphicon glyphicon-star" ><?php echo $ff->getFollowNum($i['id']) ?></i>
+        <!-- 评论数-->
+        <i class="glyphicon glyphicon-comment" style="float:right;"><?php echo $cc->countComment($i['id']); ?></i>
+        </p>
+        <p>
         <!-- 判断是否登陆，再判断是否关注，然后为i赋予不同颜色 -->
         <?php if(isset($_SESSION['user']) && $ff->isFollow($_SESSION['user']['id'],$i['id'])): ?>
           <i class="fa fa-star fa-2x" style="color:rgb(219, 112, 147);" onclick="follow(<?php if(!isset($_SESSION['user'])){echo 0;} else{echo $_SESSION['user']['id'];} ?>,<?php echo $i['id'] ?>,this);"></i>
@@ -117,10 +126,9 @@ if(!isset($_SESSION['user'])){
           <i class="fa fa-star fa-2x" style="color:black;" onclick="follow(<?php if(!isset($_SESSION['user'])){echo 0;} else{echo $_SESSION['user']['id'];} ?>,<?php echo $i['id'] ?>,this);"></i>
           <?php endif ?>
         <!-- ^^^^判断是否关注，然后为i赋予不同颜色 -->
-
-        <!--关注该影片的人数 -->
-        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="badge" style="float:right;background-color:#66ccff;">......<?php echo $ff->getFollowNum($i['id']) ?>......</span>
-                </a>
+        <!-- 更多链接 -->
+        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="label label-success" style="float:right;">更多
+                </span></a>
         </p>
       </div>
     </div>

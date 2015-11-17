@@ -1,0 +1,14 @@
+2015-10-28 关注完成
+》》》添加影评模块(done)
+》》》关注人的收藏与评论行为将显示在首页(done)
+2015-10-30 评论完成50%
+》》》ajax添加评论的评论(done)
+》》》设计reply新表(done)。
+》》》bootstrap具有响应式特性的嵌入内容(done)
+2015-11-2 评论回复完成
+》》》首页显示关注人的行为(follow,attention,comment)(done)
+2015-11-3 None
+》》》long polling or websocket 消息推送
+》》》数据库时间间隔查询(done)
+2015-11-15
+》》》redis查询，封装类

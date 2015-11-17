@@ -49,6 +49,12 @@
         </div>
         <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
 
+
+          <ul class="nav navbar-nav">
+            <li><a href="./">影库</a></li>
+            <li><a href="./show.php">动态</a></li>
+          </ul>
+
                 <?php if(isset($_SESSION['user'])): ?>
             <!-- 用户已登录 -->
 

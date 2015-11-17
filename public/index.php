@@ -29,6 +29,9 @@ if(!empty($_GET['page']))
     //follow
     $ff = new Follow();
 
+                    //连接本地的 Redis 服务
+        $redis = new Redisdb(0);
+
     //页面总数
     $pagecount = $movie->pagecount;
 
@@ -40,6 +43,31 @@ if(!empty($_GET['page']))
 	  $js_files = array("init.js");
 
 	  $css_files = array("ajax.css","movie.css");
+
+    //未设置或设置筛选为空，则设置cookie中的type为all
+    if(!isset($_SESSION['type']))
+    {
+      $_SESSION['type'] = array();
+      $_SESSION['type'][0] = '全部';
+      $_SESSION['ontimes'] = array();
+      $_SESSION['ontimes'][0] = '全部';
+      $_SESSION['country'] = array();
+      $_SESSION['country'][0] = '全部';
+      $arr = $movie->findMoive($page);  
+    }
+    else
+    {
+      //将所有筛选取并集
+      $type = array_merge($_SESSION['type'],$_SESSION['ontimes'],$_SESSION['country']);
+        $arr = array();
+        foreach ($redis->getUnion($type) as $i)
+        { 
+          echo $i;
+          $arr[] = $movie->findMoiveByID($i)[0];
+          //echo is_array($dsad);
+        }
+    }
+
 
 	  include_once 'assets/common/header.inc.php';
 ?>
@@ -96,13 +124,85 @@ if(!empty($_GET['page']))
 
 <hr />
 
+<div class="type-filter">
+<!-- 选择类型筛选 -->
+<p>
+类型：
+<?php $types = $redis->getType('type'); ?>
+<!-- 单独为全部留下的链接 -->
+    <?php $choose = in_array('全部',$_SESSION['type'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'type')">全部</a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'type')">全部</a>     
+    <?php endif; ?>
+<!-- ^^^单独为全部留下的链接 -->
+<?php foreach($types as $i): ?>
+    <?php $choose = in_array($i,$_SESSION['type'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'type')"><?php echo $i ?></a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'type')"><?php echo $i ?></a>     
+    <?php endif; ?>
+<?php endforeach; ?>
+</p>
+<!-- ^^^^选择类型筛选 -->
+
+<!-- 选择上映时间筛选 -->
+<p>
+上映时间：
+<?php $ontime = $redis->getType('ontimes'); ?>
+<!-- 单独为全部留下的链接 -->
+    <?php $choose = in_array('全部',$_SESSION['ontimes'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'ontimes')">全部</a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'ontimes')">全部</a>     
+    <?php endif; ?>
+<!-- ^^^单独为全部留下的链接 -->
+<?php foreach($ontime as $i): ?>
+    <?php $choose = in_array($i,$_SESSION['ontimes'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'ontimes')"><?php echo $i ?></a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'ontimes')"><?php echo $i ?></a>     
+    <?php endif; ?>
+<?php endforeach; ?>
+</p>
+<!-- ^^^选择上映时间筛选 -->
+
+<!-- 地区筛选 -->
+<p>
+地区：
+<?php $country = $redis->getType('country'); ?>
+<!-- 单独为全部留下的链接 -->
+    <?php $choose = in_array('全部',$_SESSION['country'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'country')">全部</a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'country')">全部</a>     
+    <?php endif; ?>
+<!-- ^^^单独为全部留下的链接 -->
+<?php foreach($country as $i): ?>
+    <?php $choose = in_array($i,$_SESSION['country'],True); ?>
+    <?php if(!empty($choose)): ?>
+<a href="javascript:void(0);" style="color:red;" onclick="changeType(this,'country')"><?php echo $i ?></a>
+    <?php else: ?>
+ <a href="javascript:void(0);" onclick="changeType(this,'country')"><?php echo $i ?></a>     
+    <?php endif; ?>
+<?php endforeach; ?>
+</p>
+<!-- ^^^上映地区筛选 -->
+</div>
+
 <!--影片展示-->
 <div class="row">
-<?php $arr = $movie->findMoive($page);
+<?php 
+      $cc = new Comment();
 	  $id = 0;
 	  foreach ($arr as $i):
 ?>
-  <div class="col-sm-6 col-md-3 col-xs-6">
+  <div class="col-sm-6 col-md-2 col-xs-6">
     <div class="thumbnail">
 		<a data-toggle="modal" data-target="#<?php echo $id ?>myModal">
 		<img id="movie-post" src="../douban/img/<?php echo $i['title'].'.jpg' ?>" alt="<?php echo $i['title'] ?>"
@@ -111,6 +211,12 @@ if(!empty($_GET['page']))
         <p>导演：<?php echo $i['director'] ?></p>
         <p>类型：<?php echo $i['types'] ?></p>
         <p>
+                <!--关注该影片的人数 -->
+        <i class="glyphicon glyphicon-star" ><?php echo $ff->getFollowNum($i['id']) ?></i>
+        <!-- 评论数-->
+        <i class="glyphicon glyphicon-comment" style="float:right;"><?php echo $cc->countComment($i['id']); ?></i>
+        </p>
+        <p>
         <!-- 判断是否登陆，再判断是否关注，然后为i赋予不同颜色 -->
         <?php if(isset($_SESSION['user']) && $ff->isFollow($_SESSION['user']['id'],$i['id'])): ?>
           <i class="fa fa-star fa-2x" style="color:rgb(219, 112, 147);" onclick="follow(<?php if(!isset($_SESSION['user'])){echo 0;} else{echo $_SESSION['user']['id'];} ?>,<?php echo $i['id'] ?>,this);"></i>
@@ -118,10 +224,9 @@ if(!empty($_GET['page']))
           <i class="fa fa-star fa-2x" style="color:black;" onclick="follow(<?php if(!isset($_SESSION['user'])){echo 0;} else{echo $_SESSION['user']['id'];} ?>,<?php echo $i['id'] ?>,this);"></i>
           <?php endif ?>
         <!-- ^^^^判断是否关注，然后为i赋予不同颜色 -->
-
-        <!--关注该影片的人数 -->
-        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="badge" style="float:right;background-color:#66ccff;">......<?php echo $ff->getFollowNum($i['id']) ?>......</span>
-                </a>
+        <!-- 更多链接 -->
+        <a href="./movie_view.php?movie=<?php echo $i['title'] ?>"><span class="label label-success" style="float:right;">更多
+                </span></a>
         </p>
       </div>
     </div>
@@ -199,6 +304,16 @@ if(!empty($_GET['page']))
 
 <!--^^^影片展示-->
 
+<!-- 未登陆则显示警告模态框 -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="warn_login">
+  <div class="modal-dialog modal-sm">
+      <div class="alert alert-danger" role="alert">
+      <h5 align="center"><strong>提示：</strong></h5>
+      <p align="center">收藏功能需要登录！</p> </div>
+  </div>
+</div>
+<!-- ^^^未登陆则显示警告模态框 -->
+
 <!--分页显示   (准备采用ajax)-->
 <nav align="center">
   <ul class="pagination pagination-lg pager">
@@ -225,7 +340,9 @@ if(!empty($_GET['page']))
   </ul>
 </nav>
 <!--^^^^分页显示-->
+<!--
 <?php if(isset($_SESSION['user'])): ?>
+  -->
 <!-- 显示user城市-->
 <!-- 取消于2015-10-28,待新功能上线
 <?php 
@@ -252,7 +369,7 @@ if(!empty($_GET['page']))
 	<input type="submit" value="查询天气"/>
 </form>
  -->
- 
+
 <!--
 <?php $arr = $wea->buildCityInfo();
 	  foreach ($arr as $inf):
@@ -260,10 +377,12 @@ if(!empty($_GET['page']))
 	<h6><a target="_blank" href="./view.php?city=<?php echo $inf->city; ?>"><?php echo $inf->city; ?>:</a></h6>
 	<?php endforeach; ?>
 -->
+<!--
 <?php if(!empty($_GET['city'])){
   $inf = $wea->buildCityInfo()[0];
  ?>
  <h6><a target="_blank" href="./view.php?city=<?php echo $inf->city; ?>"><?php echo $inf->city; ?>:</a></h6>
  <?php } ?>
+ -->
 </div>
 <?php include_once 'assets/common/footer.inc.php'; ?>

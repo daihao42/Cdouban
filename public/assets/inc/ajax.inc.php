@@ -25,6 +25,126 @@ session_start();
 				)
 		);
 
+//*****************changeSession['type']**************//
+if($_POST['action'] == "addType")
+{
+	//echo $_POST['action'];
+	$cho = $_POST['cho'];
+	$val = $_POST['val'];
+//type允许多类型
+	if($cho == 'type'){
+		if($_POST['val'] == '全部')
+	{
+		//选择全部，清空类型
+		unset($_SESSION[$cho]);
+		$_SESSION[$cho][0] = '全部';
+	}
+	else
+	{
+		if($_SESSION[$cho][0] == '全部')
+		{
+			unset($_SESSION[$cho]);
+		}
+		//如果已经选中筛选，则取消筛选
+		if(in_array($_POST['val'],$_SESSION[$cho],True))
+		{
+			$key = array_search($_POST['val'],$_SESSION[$cho]);
+			if ($key !== false)
+    			array_splice($_SESSION[$cho], $key, 1);
+		}
+		//不存在，则添加筛选
+		else
+		{
+			$_SESSION[$cho][] = $_POST['val'];
+			$_SESSION[$cho] = array_unique($_SESSION[$cho]);
+		}
+	}
+	}
+	//ontimes和country不允许多选
+	else
+	{
+		$_SESSION[$cho][0] = $_POST['val'];
+	}
+	//echo $_POST['type'];
+}
+//*****************^^^^^^^^changeSession['type']**************//
+
+//******************getNews()********************//
+if ($_POST['action'] == "getNews") {
+	//sleep(2);
+
+	$movie = new Movie();
+	$admin = new Admin();
+
+	if(isset($_SESSION['user']))
+	{
+		$re = new Recommend($_SESSION['user']['id'],$_POST['pagecnt']);
+		$is_login = 'true';
+	}
+	else
+	{
+		$re = new Recommend(NULL,$_POST['pagecnt']);
+		$is_login = 'false';
+	}
+
+//查询时间是否已经溢出
+	if($re->overTimeFlow()){
+
+	$res = $re->getNews();
+
+	foreach ($res as $i) {
+		$mm = $movie->findMoiveByID($i['movie_id']);
+		if($i['type'] == 'ac'){
+			$uu = $admin->findUserByID($i['author_id']);
+				echo <<<HTML
+	<div class="alert alert-success" role="alert">
+	<li class="list-group-item">
+		<p><a href="javascript:void(0);" onclick="is_login({$is_login},{$uu['user_id']})">
+			{$uu['user_name']}</a> 评论 
+			<a href="./movie_view.php?movie={$mm[0]['title']}">{$mm[0]['title']}</a>:
+		<span style="float:right;">{$i['time']}</span></p>
+		<p>{$i['content']}<a href="./movie_view.php?movie={$mm[0]['title']}#{$i['id']}rep">查看</a></p>
+		</li>
+	</div>
+HTML;
+		}
+		elseif($i['type'] == 'fc')
+		{
+			$uu = $admin->findUserByID($i['author_id']);
+			echo <<<HTML
+	<div class="alert alert-warning" role="alert">
+	<li class="list-group-item">
+		<p><a href="./movie_view.php?movie={$mm[0]['title']}">{$mm[0]['title']}</a>有新评论:
+		<span style="float:right;">{$i['time']}</span></p>
+		<p>{$i['content']}<a href="./movie_view.php?movie={$mm[0]['title']}#{$i['id']}rep">查看</a></p>
+		</li>
+	</div>
+HTML;
+		}
+		elseif($i['type'] == 'af')
+		{
+			$uu = $admin->findUserByID($i['user_id']);
+			echo <<<HTML
+	<div class="alert alert-info" role="alert">
+	<li class="list-group-item">
+		<p><a href="javascript:void(0);" onclick="is_login($is_login,{$uu['user_id']})">
+			{$uu['user_name']}</a> 收藏了
+			<a href="./movie_view.php?movie={$mm[0]['title']}">{$mm[0]['title']}</a>
+		<span style="float:right;">{$i['time']}</span></p>
+		</li>
+	</div>
+HTML;
+		}
+	}
+  }
+  //时间溢出，返回false
+  else
+  {
+  	echo 'false';
+  }
+}
+
+
 //调用follow.downFollow()取消关注
 if($_POST['action']=="downFollow" )
 {
@@ -65,6 +185,77 @@ else{
 }
 }
 
+
+//取得回复
+if ($_POST['action']=="getReply") {
+	$rr = new Reply();
+	$aa = new Admin();
+	$re = $rr->getReplyByComment($_POST['commentID']);
+	$res = "";
+	foreach ($re as $i) {
+		$uu = $aa->findUserByID($i['author_id']);
+		$is_l = (isset($_SESSION['user']) ? 'true' : 'false');
+		//如果是回复回复的回复
+		if($i['to_who'] != 0){
+			$to_uu = $aa->findUserByID($i['to_who']);
+			$con = <<<HTML
+		<div class="alert alert-warning" role="alert">
+		<a href="javascript:void(0);" onclick="is_login({$is_l},{$uu['user_id']} )">{$uu['user_name']}</a>
+		对 <a href="javascript:void(0);" onclick="is_login({$is_l},{$to_uu['user_id']} )">{$to_uu['user_name']}</a>说：
+		<span style="float:right"><a href="javascript:void(0);" onclick="repToRep({$i['to_comment']},{$uu['user_id']},'{$uu['user_name']}')">回复</a>{$uu['time']}</span>
+		<p>&nbsp;&nbsp;{$i['content']}</p>
+		</div>
+HTML;
+		}
+		//回复评论的回复
+		else{
+		$con = <<<HTML
+		<div class="alert alert-warning" role="alert">
+		<a href="javascript:void(0);" onclick="is_login({$is_l},{$uu['user_id']} )">{$uu['user_name']}</a>说：
+		<span style="float:right"><a href="javascript:void(0);" onclick="repToRep({$i['to_comment']},{$uu['user_id']},'{$uu['user_name']}')">回复</a>{$uu['time']}</span>
+		<p>&nbsp;&nbsp;{$i['content']}</p>
+		</div>
+HTML;
+		}
+		$res = $res.$con;
+	}
+
+	//如果登陆了，就显示回复框，否则不显示
+	if(isset($_SESSION['user']))
+	{
+		//注意form中的onkeydown事件，禁止回车提交表格
+		$inp = <<<HTML
+ <div class="reply_forms">
+ <form class="form-vertical" id="reply-f{$_POST['commentID']}" onkeydown="if(event.keyCode==13){return false;}">
+        <div class="form-group">
+          <div class="controls">
+          <input name="content" class="form-control" id="rep{$_POST['commentID']}" placeholder="说点什么" />
+          <input type="hidden" name="token" value="{$_SESSION['token']}" />
+          <input type="hidden" name="author_id" value="{$_SESSION['user']['id']}">
+			<input type="hidden" name="action" value="reply_post">
+			<input type="hidden" name="to_comment" value="{$_POST['commentID']}">
+			<input type="button" class="btn btn-primary" onclick="return reply({$_POST['commentID']});" value="回复"></input>
+            <div class="help-block"></div>
+          </div>
+        </div>
+	</form>
+ </div>
+HTML;
+ 	$res = $res.$inp;
+ }
+	echo $res;
+}
+//^^^取得回复
+//添加回复
+if($_POST['action']=='reply_post' && $_POST['token'] == $_SESSION['token'])
+{
+	$rr = new Reply();
+	if($rr->addReply())
+	{
+		echo $_POST['content'];
+	}
+}
+//^^^^^添加回复
 /*
  * modal只有text方法，不能解析为html，所以只能显示出html语句，所以弃用
 	//请求电影信息

@@ -48,10 +48,13 @@ else{
 <br />
 <label><?php echo $page_title ?></label>
   <?php foreach ($uu as $u): ?>
+  	<!-- 保证自己不出现在自己的关注列表中 -->
+  	<?php if($u['user_id'] != $id): ?>
     <div>
       <span><a href="javascript:void(0);" onclick="is_login(<?php echo (isset($_SESSION['user']) ? 'true' : 'false') ?>,<?php echo $u['user_id']; ?>)" ><span>
         <img src="<?php echo $u['user_img'] ?>" class="img-responsive img-thumbnail" style="width:100px;">
       </span> <?php echo $u['user_name'] ?></a></span>
     </div>
+	<?php endif ?>
   <?php endforeach ?>
 </div>

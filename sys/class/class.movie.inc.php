@@ -11,14 +11,14 @@ class Movie extends DB_Connect
 {
 
 		//pagesize;分页的大小
-		private $pagesize = 8;
+		private $pagesize = 6;
 		//pagecount;总页数
 		public $pagecount = 0;
 		/*
 		 * 构造函数
 		 * @param object $dbo 数据库对象，默认为mysql
 		 */
-		public function __construct($dbo=NULL,$userCity=NULL)
+		public function __construct($dbo=NULL)
 		{
 			//调用父类构造函数，生成数据库对象
 			parent::__construct($dbo);
@@ -28,7 +28,14 @@ class Movie extends DB_Connect
 			$stmt->execute();
 			$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			$stmt->closeCursor();
-			$this->pagecount = (int)(count($results)/$this->pagesize) + 1;
+			//如果有余则加1，否则不加
+			if(count($results)%$this->pagesize){
+				$this->pagecount = (int)(count($results)/$this->pagesize) + 1;
+			}
+			else
+			{
+				$this->pagecount = (int)(count($results)/$this->pagesize);
+			}
 		}
 
 		/**
@@ -107,12 +114,12 @@ class Movie extends DB_Connect
 				$stmt->execute();
 				$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				$stmt->closeCursor();
-				return $results;
 			}
 			catch (Exception $e)
 			{
 				die($e->getMessage());
 			}
+			return $results;
 		}
 
 

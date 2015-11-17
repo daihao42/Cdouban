@@ -16,7 +16,7 @@ if(empty($_GET['movie'])){
 
 	  $page_title = $movie_title;
 
-	  $js_files = array("init.js","movie_view.js");
+	  $js_files = array("init.js","movie_view.js","comment.js");
 
 	  $css_files = array("ajax.css","movie_info.css");
 
@@ -109,13 +109,13 @@ if(empty($_GET['movie'])){
 <div class="follow_this">
 <br />
 <label>他们也收藏这部影片</label>
+  <div>
   <?php foreach ($ff->getFollowUser($i['id']) as $u): ?>
-    <div>
-      <span><a href="javascript:void(0);" onclick="is_login(<?php echo (isset($_SESSION['user']) ? 'true' : 'false') ?>,<?php echo $u['user_id']; ?>)"><span>
+      <span data-toggle="tooltip" data-placement="top" title="<?php echo $u['user_name'] ?>"><a href="javascript:void(0);" onclick="is_login(<?php echo (isset($_SESSION['user']) ? 'true' : 'false') ?>,<?php echo $u['user_id']; ?>)"><span>
         <img src="<?php echo $u['user_img'] ?>" class="img-responsive img-thumbnail" style="width:70px;">
-      </span> <?php echo $u['user_name'] ?></a></span>
-    </div>
+      </span></a></span>&nbsp;
   <?php endforeach ?>
+  </div>
 </div>
 
 <!-- 未登陆则显示警告模态框 -->
@@ -126,7 +126,15 @@ if(empty($_GET['movie'])){
       <p align="center">你需要登录先！</p> </div>
   </div>
 </div>
-
+<!-- 输入为空则显示警告模态框 -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="warn_input">
+  <div class="modal-dialog modal-sm">
+      <div class="alert alert-danger" role="alert">
+      <h5 align="center"><strong>警告：</strong></h5>
+      <p align="center">未输入任何字符！</p> </div>
+  </div>
+</div>
+<?php include_once '_comments.php'; ?>
 
 </div>
 <?php include_once 'assets/common/footer.inc.php'; ?>

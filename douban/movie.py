@@ -50,7 +50,9 @@ class Movie:
 		arr=[]
 		for header in self.soup.find_all('li',class_ = 'ui-slide-item'):
 			try:
-				arr.append(dict(title=header['data-title'],
+				##为了解决win下文件名不能含有:的BUG，替换英文:为中文：
+				title = header['data-title'].replace(':','：')
+				arr.append(dict(title=title,
 								info=header.ul.li.a['href'],
 								img=header.ul.li.a.img['src']))
 			except KeyError:
@@ -69,7 +71,7 @@ class Movie:
 	def dumpMoreImg(self,imgpath,soup):
 	#soup findall img and save
 		i=0
-		for img in soup.find('ul',class_ = 'related-pic-bd narrow').find_all('img',alt='图片'):
+		for img in soup.find('ul',class_ = 'related-pic-bd').find_all('img',alt='图片'):
 			dumppath=os.path.join(imgpath,str(i)+".jpg")
 			img_url = 'http://img3.douban.com/view/photo/photo/public/'+self.getPicNum(img['src'])
 			urllib.request.urlretrieve(img_url,dumppath,rph)
@@ -81,12 +83,15 @@ class Movie:
 		#本地图片save目录
 		dumppath=os.path.join(os.path.abspath('.'),'img')
 		for i in self.arr:
-			
 			imgpath=os.path.join(dumppath,i['title']+".jpg")
 			#判断本地图片是否已存在,不存在则下载图片并显示进度条
 			if not os.path.isfile(imgpath):
 				img_url = 'http://img3.douban.com/view/photo/photo/public/'+self.getPicNum(i['img'])
-				urllib.request.urlretrieve(img_url,imgpath,rph)
+				###fix 没有高清剧照的bug
+				try:
+					urllib.request.urlretrieve(img_url,imgpath,rph)
+				except Exception:
+					urllib.request.urlretrieve(i['img'],imgpath,rph)
 			#存在则pass
 			else:
 				pass
@@ -131,26 +136,40 @@ class Movie:
 		d['actor'] = istr
 
 		istr=''
+		#L返回存储到redis
+		L = []
 		for i in soup.find('div',id='info').find_all('span',property='v:genre'):
 			istr += i.get_text()
+			#将类型保存到L列表中
+			L.append(i.get_text())
 			istr += '/'
 		istr = istr[:-1]
+		d['type'] = L
 		d['types'] = istr
 
 		reg = re.compile(r'制片国家/地区:</span> (.*)<br/>')
-		d['country'] = re.findall(reg,str(soup.find('div',id='info')))[0]
+		istr = re.findall(reg,str(soup.find('div',id='info')))[0]
+		d['countrys'] = istr.split('/')
+		d['country'] = istr
 
 		reg = re.compile(r'语言:</span> (.*)<br/>')
 		d['lang'] = re.findall(reg,str(soup.find('div',id='info')))[0]
 
 		reg = re.compile(r'又名:</span> (.*)<br/>')
-		d['another'] = re.findall(reg,str(soup.find('div',id='info')))[0]
+		try:
+			d['another'] = re.findall(reg,str(soup.find('div',id='info')))[0]
+		except Exception:
+			d['another'] = None
 
 		istr=''
+		L = []
 		for i in soup.find('div',id='info').find_all('span',property='v:initialReleaseDate'):
 			istr += i.get_text()
+			#将上映时间保存到L列表中
+			L.append(i.get_text().split('-')[0])
 			istr += '/'
 		istr = istr[:-1]
+		d['ontimes'] = L
 		d['ontime'] = istr
 
 		istr=''
@@ -164,10 +183,18 @@ class Movie:
 		d['summary'] = istr
 		
 		istr=soup.find('strong',property="v:average").get_text()
-		d['average'] = float(istr)
+		#防止douban.movie的刚上映的电影没有评分和评论
+		try:
+			d['average'] = float(istr)
+		except Exception:
+			d['average'] = 0.0
 
-		istr=soup.find('span',property="v:votes").get_text()
-		d['votes'] = int(istr)
+		#防止douban.movie的刚上映的电影没有评分和评论
+		try:
+			istr=soup.find('span',property="v:votes").get_text()
+			d['votes'] = int(istr)
+		except Exception:
+			d['votes'] = 0
 		
 		return d
 
@@ -181,11 +208,20 @@ class Movie:
 			soup = BeautifulSoup(oper,"html.parser")
 		except Exception:
 			return d
+		
 		istr=soup.find('strong',property="v:average").get_text()
-		d['average'] = float(istr)
+		#防止douban.movie的刚上映的电影没有评分和评论
+		try:
+			d['average'] = float(istr)
+		except Exception:
+			d['average'] = 0.0
 
-		istr=soup.find('span',property="v:votes").get_text()
-		d['votes'] = int(istr)
+		#防止douban.movie的刚上映的电影没有评分和评论
+		try:
+			istr=soup.find('span',property="v:votes").get_text()
+			d['votes'] = int(istr)
+		except Exception:
+			d['votes'] = 0
 
 		print(d)
 
@@ -201,7 +237,8 @@ class Movie:
 if __name__ == '__main__':
 	test = Movie("http://movie.douban.com/")
 	#test.dumpImg()
-	print(test.getInfo(test.arr[2]['info']))
+	print(test.getInfo(test.arr[0]['info']))
+	#print(test.arr)
 	#print(test.getPicNum('http://img3.douban.com/view/photo/photo/public/p2218744059.jpg'))
 
 
