@@ -5,6 +5,12 @@
  * PHP 5.6
  */
 
+/*********
+ * db0作为存放type，ontimes和country的筛选的持久层
+ * db1将作为recommend的缓冲层，取出所有数据放入缓冲层
+ *
+ ***********/
+
 class Redisdb
 {
 
@@ -16,7 +22,8 @@ class Redisdb
 	public function __construct($dbn)
 	{
 		$this->redis = new Redis();
-        $this->redis->connect('127.0.0.1', 6379, $dbn);
+        $this->redis->connect('127.0.0.1', 6379);
+        $this->redis->select($dbn);
 	}
 
 	/**
@@ -44,6 +51,34 @@ class Redisdb
 			$arr = array_intersect($arr,$this->getType($k));
 		}
 		return $arr;
+	}
+
+	/**
+	 * incr原子性自增,用于处理访问量等
+	 * incr(key) return 自增后的值
+	 * @param string 自增的键值
+	 */
+	public function incr($key)
+	{
+		return $this->redis->incr($key);
+	}
+
+	/**
+	 * 设置键值
+	 * 默认为0
+	 */
+	public function setKey($key,$val=0)
+	{
+		return $this->redis->set($key,$val);
+	}
+
+	/**
+	 *
+	 *
+	 */
+	public function getKey($key)
+	{
+		return $this->redis->get($key);
 	}
 
 }

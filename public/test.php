@@ -10,12 +10,21 @@
 	//follow
     //echo phpinfo();
     //连接本地的 Redis 服务
+    /*
    $movie = new Movie();
    $arr = array();
    for($i=1;$i<3;$i++){
     $arr[] = $movie->findMoiveByID(1)[0];
    }
    print_r($arr);
+   */
+
+   //测试redis_db3访问量
+   $redis = new Redisdb(3);
+   //echo $redis->getKey('click');
+   //$redis->setKey('click');
+   echo $redis->incr('click');
+
 
 ?>
 </html>

@@ -115,11 +115,18 @@ class Movie:
 				self.dumpMoreImg(morepath,soup)
 
 		istr = ''
-		for i in soup.find('div',id='info').find_all('a',rel='v:directedBy'):
-			istr += i.get_text()
-			istr += '/'
-		istr = istr[:-1]
-		d['director'] = istr
+		try:
+			for i in soup.find('div',id='info').find_all('a',rel='v:directedBy'):
+				istr += i.get_text()
+				istr += '/'
+			istr = istr[:-1]
+			if istr is None:
+				d['director'] = '暂无'
+			else:
+				d['director'] = istr
+		except Exception:
+			d['director'] = '暂无'
+
 
 		istr = ''
 		for i in soup.find('div',id='info').find_all('span',class_='attrs')[1].find_all('a'):
@@ -237,7 +244,7 @@ class Movie:
 if __name__ == '__main__':
 	test = Movie("http://movie.douban.com/")
 	#test.dumpImg()
-	print(test.getInfo(test.arr[0]['info']))
+	print(test.getInfo(test.arr[2]['info']))
 	#print(test.arr)
 	#print(test.getPicNum('http://img3.douban.com/view/photo/photo/public/p2218744059.jpg'))
 

@@ -62,12 +62,11 @@ if(!empty($_GET['page']))
         $arr = array();
         foreach ($redis->getUnion($type) as $i)
         { 
-          echo $i;
+          //echo $i;
           $arr[] = $movie->findMoiveByID($i)[0];
           //echo is_array($dsad);
         }
     }
-
 
 	  include_once 'assets/common/header.inc.php';
 ?>
