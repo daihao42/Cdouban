@@ -21,7 +21,7 @@ from config import MyConfig
 # 创建对象的基类:
 Base = declarative_base()
 
-engine = create_engine('mysql+mysqldb://root:324426@127.0.0.1:3306/mydouban?charset=utf8')
+engine = create_engine('mysql+mysqldb://root:324426@127.0.0.1:3306/android?charset=utf8')
 
 Base.metadata.create_all(engine)
 # 创建DBSession类型:
@@ -56,9 +56,9 @@ class Auth(Base):
 			userhash = hashlib.sha1((str(salt)+password).encode('utf-8')).hexdigest()
 			if salt+userhash == c.user_pass:
 				#return myconfig.Login_OK
-				d = {'username':c.user_name,'about':c.user_about,'city':c.user_city}
-				#return json.dumps(d)
-				return 'username:'+c.user_name+'&about:'+c.user_about
+				d = {'response':'comfirmed','name':c.user_name,'about':c.user_about,'city':c.user_city,'image':c.user_img}
+				return json.dumps(d)
+				#return 'username:'+c.user_name+'&about:'+c.user_about
 			else :
 				return myconfig.Passwd_Is_Wrong
 		else :
@@ -86,6 +86,7 @@ class Auth(Base):
 				 user_email = email,
 				 user_pass = userhash,
 				 user_city = city,
+				 user_about = '',
 				 user_img = '../static/defalut.jpg')
 		try:
 			session.add(c)
