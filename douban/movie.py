@@ -129,10 +129,13 @@ class Movie:
 
 
 		istr = ''
-		for i in soup.find('div',id='info').find_all('span',class_='attrs')[1].find_all('a'):
-			istr += i.get_text()
-			istr += '/'
-		istr = istr[:-1]
+		try:
+			for i in soup.find('div',id='info').find_all('span',class_='attrs')[1].find_all('a'):
+				istr += i.get_text()
+				istr += '/'
+			istr = istr[:-1]
+		except Exception:
+			istr = ''
 		d['writer'] = istr
 
 		istr=''

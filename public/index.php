@@ -32,8 +32,7 @@ if(!empty($_GET['page']))
                     //连接本地的 Redis 服务
         $redis = new Redisdb(0);
 
-    //页面总数
-    $pagecount = $movie->pagecount;
+    
 
 	  /*
 	   * 页面初始化信息，包括标题，js和css
@@ -53,19 +52,23 @@ if(!empty($_GET['page']))
       $_SESSION['ontimes'][0] = '全部';
       $_SESSION['country'] = array();
       $_SESSION['country'][0] = '全部';
-      $arr = $movie->findMoive($page);  
+      $arr = $movie->findMoive($page); 
+      //页面总数
+      $pagecount = $movie->pagecount; 
     }
     else
     {
       //将所有筛选取并集
       $type = array_merge($_SESSION['type'],$_SESSION['ontimes'],$_SESSION['country']);
         $arr = array();
-        foreach ($redis->getUnion($type) as $i)
+        foreach ($redis->get_page_Union($page,$type) as $i)
+          //$redis->getUnion($type) as $i)
         { 
           //echo $i;
           $arr[] = $movie->findMoiveByID($i)[0];
           //echo is_array($dsad);
         }
+      $pagecount = $redis->get_page_Count();
     }
 
 	  include_once 'assets/common/header.inc.php';

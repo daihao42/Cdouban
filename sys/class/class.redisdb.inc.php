@@ -14,6 +14,9 @@
 class Redisdb
 {
 
+	//保存取出的所有数据的数组，注意，在get_page_Union后才赋值
+	private $type_arr;
+
 	protected $redis;
 	/**
 	 * 连接redis，localhost
@@ -79,6 +82,29 @@ class Redisdb
 	public function getKey($key)
 	{
 		return $this->redis->get($key);
+	}
+
+	/**
+	 * 分页查询
+	 * 使用PHP的数组分片
+	 */
+	public function get_page_Union($page,$types){
+		$offset = ($page - 1)*6;
+		$this->type_arr = $this->getUnion($types);
+		return array_slice($this->type_arr,$offset,6);
+	}
+
+	/**
+	 * 获取总页数
+	 */
+	public function get_page_Count(){
+		if(count($this->type_arr) % 6){
+				return (int)(count($this->type_arr) / 6 + 1);
+			}
+			else
+			{
+				return (int)(count($this->type_arr) / 6 );
+			}
 	}
 
 }
